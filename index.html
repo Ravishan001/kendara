@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Kandara: single-estate Ceylon teas from above the clouds. Explore the seven regions, shop the collection and time your brew.">
+<meta property="og:title" content="Kandara Tea">
+<meta property="og:description" content="Tea from above the clouds.">
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="img/kandara-logo.svg">
+<title>Kandara Tea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: highland tea house. Light mist page with deep estate-green chapters.
+   Each section has its own motion: falling-leaf hero + rippling cup, word-by-word story, pinned horizontal climb through
+   seven regions, dealt-out tea cards with Flip filtering, a live brewing timer, stacked process cards, velocity marquee. */
+:root{
+  color-scheme: light;
+  --mist:#E8EDE9;     /* page */
+  --mist-2:#DAE2DC;   /* quiet fills */
+  --paper:#F5F7F4;    /* cards */
+  --estate:#12271F;   /* ink + dark sections */
+  --estate-2:#1C362C;
+  --leaf:#3F6B47;
+  --amber:#C46A1B;    /* tea liquor, the one accent */
+  --amber-soft:#E9A250;
+  --on-dark:#E6EEE8;
+  --line:rgba(18,39,31,.14);
+  --line-dark:rgba(230,238,232,.16);
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,Consolas,monospace;
+  --gutter:clamp(16px,5vw,64px);
+  --max:1240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+[data-lenis-prevent]{overscroll-behavior:contain}
+body{background:var(--mist);color:var(--estate);font-family:var(--body);font-size:16px;line-height:1.6;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.wrap{max-width:var(--max);margin-inline:auto}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.h2{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,5.4vw,4.6rem);line-height:1;letter-spacing:-.02em;text-wrap:balance;font-variation-settings:"opsz" 144}
+.h2 em{font-style:italic;color:var(--amber)}
+.lede{font-size:clamp(1rem,1.3vw,1.15rem);max-width:52ch;opacity:.82}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 22px;border-radius:999px;border:1.5px solid currentColor;background:transparent;font-weight:600;text-decoration:none;transition:transform .2s,background .2s,color .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.solid{background:var(--estate);color:var(--mist);border-color:var(--estate)}
+.btn.amber{background:var(--amber);color:#fff;border-color:var(--amber)}
+.section{padding:clamp(80px,12vw,160px) var(--gutter)}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:100;background:var(--estate);color:var(--on-dark);display:grid;place-items:center;
+  animation:loaderOut .6s ease 3.2s forwards}
+#loader .inner{display:grid;justify-items:center;gap:14px}
+#loader svg{width:72px;height:72px}
+#loader .lmark{color:var(--amber-soft);clip-path:circle(0% at 50% 50%);transform:rotate(-60deg);animation:lreveal 1.1s cubic-bezier(.3,.9,.3,1) forwards}
+@keyframes lreveal{to{clip-path:circle(75% at 50% 50%);transform:none}}
+#loader .word{font-family:var(--display);font-size:2rem;letter-spacing:.02em}
+#loader .draw{fill:none;stroke:var(--amber-soft);stroke-width:2.2;stroke-dasharray:240;stroke-dashoffset:240;animation:draw 1.2s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes loaderOut{to{opacity:0;visibility:hidden}}
+
+/* ---------- cursor ---------- */
+.cursor{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:1.5px solid var(--estate);border-radius:50%;pointer-events:none;z-index:90;
+  transition:width .25s,height .25s,margin .25s,background .25s,border-color .25s;mix-blend-mode:multiply;display:none}
+.cursor.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(196,106,27,.18);border-color:var(--amber)}
+@media (pointer:fine){.cursor{display:block}}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) var(--gutter) 14px;transition:background .3s,transform .4s,color .3s}
+.nav.solid{background:rgba(232,237,233,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+.nav.hide{transform:translateY(-110%)}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-size:1.35rem;letter-spacing:.01em}
+.brand svg{width:30px;height:30px}
+.nav ul{display:flex;gap:clamp(14px,2.4vw,32px);list-style:none}
+.nav ul a{text-decoration:none;font-size:.95rem;position:relative}
+.nav ul a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .3s}
+.nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
+.bagbtn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid currentColor;border-radius:999px;padding:7px 14px 7px 12px;background:transparent;font-weight:600}
+.bagbtn svg{width:18px;height:18px}
+.count{min-width:22px;height:22px;border-radius:11px;background:var(--amber);color:#fff;font-size:.78rem;display:grid;place-items:center;padding:0 6px;font-variant-numeric:tabular-nums}
+@media (max-width:820px){.nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;gap:clamp(24px,4vw,64px);
+  padding:calc(env(safe-area-inset-top,0px) + 110px) var(--gutter) 70px;overflow:hidden}
+#leaves{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero > *:not(canvas){position:relative;z-index:1}
+.hero h1{font-family:var(--display);font-weight:350;font-size:clamp(3rem,8.4vw,7.6rem);line-height:.92;letter-spacing:-.035em;font-variation-settings:"opsz" 144;margin-block:18px 24px}
+.hero h1 em{font-style:italic;color:var(--amber);font-weight:400}
+.hero h1 .ch{display:inline-block;will-change:transform}
+.hero h1 .wd{display:inline-block;white-space:nowrap}
+.hero .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.stats{display:flex;flex-wrap:wrap;gap:12px 36px;margin-top:44px;font-family:var(--mono);font-size:.78rem;letter-spacing:.04em}
+.stats b{display:block;font-family:var(--display);font-weight:400;font-size:2rem;letter-spacing:-.01em;line-height:1.1}
+.cupwrap{position:relative;width:min(100%,520px);aspect-ratio:1;margin-inline:auto}
+.cupwrap svg{width:100%;height:100%;overflow:visible}
+.spin{position:absolute;inset:0}
+.cupimg{width:100%;height:100%;object-fit:contain}
+.cupwrap svg.ripples{position:absolute;inset:0}
+.ripple{fill:none;stroke:rgba(255,236,205,.55);stroke-width:1.4;transform-origin:260px 260px;animation:ripple 3.6s ease-out infinite}
+.ripple.r2{animation-delay:1.2s}.ripple.r3{animation-delay:2.4s}
+@keyframes ripple{from{transform:scale(.15);opacity:.9}to{transform:scale(1);opacity:0}}
+.cupnote{position:absolute;right:2%;bottom:6%;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:var(--paper);padding:8px 12px;border-radius:999px;box-shadow:0 6px 20px rgba(18,39,31,.1)}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);padding-top:calc(env(safe-area-inset-top,0px) + 96px)}.cupwrap{width:min(82vw,360px)}.cupnote{right:0;bottom:2%}.stats{margin-top:30px}}
+.scrollcue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6;z-index:1}
+
+/* ---------- story ---------- */
+.story{background:var(--estate);color:var(--on-dark);min-height:100svh;display:grid;align-content:center}
+.story p{font-family:var(--display);font-weight:350;font-size:clamp(1.8rem,4.2vw,3.6rem);line-height:1.15;letter-spacing:-.015em;max-width:24ch;font-variation-settings:"opsz" 144}
+.story{position:relative;overflow:hidden}
+.sbg{position:absolute;inset:0}
+.sbg img{width:100%;height:100%;object-fit:cover;object-position:70% 50%}
+.sbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,39,31,.94) 0%,rgba(18,39,31,.78) 45%,rgba(18,39,31,.3) 100%)}
+.story .wrap{position:relative;z-index:1;width:100%}
+.story .w{opacity:.16;transition:none}
+.story .w.hi{color:var(--amber-soft)}
+.story .eyebrow{margin-bottom:28px}
+
+/* ---------- regions (horizontal) ---------- */
+.regions{position:relative;height:100svh;overflow:hidden;background:var(--mist)}
+.ridge{position:absolute;left:0;bottom:0;height:46%;width:260%;z-index:0;pointer-events:none}
+.ridge path.back{fill:var(--mist-2)}
+.ridge path.front{fill:rgba(63,107,71,.16)}
+.rtrack{position:relative;z-index:1;display:flex;align-items:center;gap:clamp(16px,2vw,28px);height:100%;padding:calc(env(safe-area-inset-top,0px) + 90px) var(--gutter) 60px;width:max-content}
+.rintro{width:min(80vw,440px);flex:none;padding-right:clamp(10px,3vw,40px)}
+.rintro .h2{margin-block:14px 18px}
+.rcard{flex:none;width:min(78vw,330px);background:var(--paper);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 20px 50px -30px rgba(18,39,31,.4);border-top:6px solid var(--tint)}
+.rimg{margin:-24px -24px 6px;height:clamp(140px,22svh,200px);overflow:hidden;border-radius:16px 16px 0 0}
+.rimg img{width:118%;max-width:none;height:100%;object-fit:cover}
+.rcard h3{font-family:var(--display);font-weight:450;font-size:1.9rem;line-height:1.05}
+.rcard .band{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tint)}
+.rcard p{font-size:.98rem;opacity:.82}
+.meter{margin-top:auto;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:end}
+.meter svg{width:56px;height:130px}
+.meter .range{font-family:var(--display);font-size:1.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.meter .range small{display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.altimeter{position:absolute;right:var(--gutter);top:calc(env(safe-area-inset-top,0px) + 86px);z-index:2;text-align:right;font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
+.altimeter b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,4vw,3.4rem);letter-spacing:-.02em;text-transform:none;font-variant-numeric:tabular-nums;line-height:1}
+.rprog{position:absolute;left:var(--gutter);right:var(--gutter);bottom:26px;height:2px;background:var(--line);z-index:2}
+.rprog i{display:block;height:100%;width:0;background:var(--estate)}
+
+/* ---------- teas ---------- */
+.teas .head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:36px}
+.teas .head .h2{margin-top:12px}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 16px;font-weight:600;font-size:.92rem;transition:background .2s,color .2s,border-color .2s}
+.chip[aria-pressed="true"]{background:var(--estate);color:var(--mist);border-color:var(--estate)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2vw,24px)}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{position:relative;background:var(--paper);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px;transform-style:preserve-3d;will-change:transform;
+  box-shadow:0 1px 0 var(--line),0 24px 50px -36px rgba(18,39,31,.45)}
+.card.gone{display:none}
+.card .stage{position:relative;aspect-ratio:5/4;border-radius:16px;background:var(--bgt);display:grid;place-items:center;overflow:hidden}
+.card .stage::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.45),transparent 55%);opacity:0;transition:opacity .3s;pointer-events:none}
+.card:hover .stage::after{opacity:1}
+.tinbox{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);aspect-ratio:1;container-type:inline-size}
+.tinbox img{width:100%;height:100%;object-fit:cover}
+.tinbox .lift{}
+.lbl2{position:absolute;left:50%;top:56.5%;transform:translate(-50%,-50%);width:23%;text-align:center;color:var(--estate);display:grid;justify-items:center;gap:.6cqw;pointer-events:none}
+.tinbox{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.card:hover .tinbox{transform:translateY(-52%) scale(1.04)}
+.lbl2 svg{width:4.6cqw;height:4.6cqw}
+.lbl2 b{font-family:var(--display);font-weight:500;font-size:3.1cqw;line-height:1.05}
+.lbl2 i{font-style:normal;font-family:var(--mono);font-size:1.55cqw;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.card .type{z-index:2;position:absolute;left:12px;top:12px;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;background:rgba(245,247,244,.85);padding:5px 10px;border-radius:999px}
+.card h3{font-family:var(--display);font-weight:450;font-size:1.6rem;line-height:1.1}
+.card .meta{font-family:var(--mono);font-size:.76rem;letter-spacing:.04em;opacity:.7}
+.card .notes{font-size:.95rem;opacity:.82}
+.card .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
+.price{font-family:var(--display);font-size:1.3rem;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--mono);font-size:.72rem;opacity:.6;margin-left:4px}
+.card .acts{display:flex;gap:8px}
+.mini{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-weight:600;font-size:.88rem;transition:background .2s,color .2s,border-color .2s}
+.mini:hover{border-color:var(--estate)}
+.mini.add{background:var(--estate);color:var(--mist);border-color:var(--estate)}
+.mini.add:hover{background:var(--amber);border-color:var(--amber)}
+
+/* tea tin (CSS cylinder) */
+.tin{position:relative;width:118px;height:150px;border-radius:12px 12px 10px 10px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 62%,#000) 0%,var(--tc) 18%,color-mix(in srgb,var(--tc) 70%,#fff) 34%,var(--tc) 52%,color-mix(in srgb,var(--tc) 78%,#000) 86%,color-mix(in srgb,var(--tc) 55%,#000) 100%);
+  box-shadow:0 22px 30px -18px rgba(0,0,0,.45)}
+.tin::before{content:"";position:absolute;left:-3px;right:-3px;top:-6px;height:26px;border-radius:10px 10px 6px 6px;
+  background:linear-gradient(90deg,#8d9590 0%,#e9eeea 30%,#b9c2bc 55%,#7d8580 100%);box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.tin .lbl{position:absolute;left:12px;right:12px;top:42px;bottom:18px;border-radius:4px;background:rgba(245,247,244,.92);display:grid;place-content:center;text-align:center;gap:2px;padding:6px}
+.tin .lbl b{font-family:var(--display);font-weight:500;font-size:.86rem;line-height:1.05;color:var(--estate)}
+.tin .lbl i{font-style:normal;font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--estate);opacity:.7}
+.tin .lbl svg{width:16px;height:16px;margin:0 auto 2px;color:var(--estate)}
+
+/* ---------- brew lab ---------- */
+.brew{background:var(--estate);color:var(--on-dark)}
+.brewgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,80px);align-items:center}
+@media (max-width:860px){.brewgrid{grid-template-columns:minmax(0,1fr)}}
+.brew .chip{border-color:var(--line-dark);color:var(--on-dark)}
+.brew .chip[aria-pressed="true"]{background:var(--on-dark);color:var(--estate);border-color:var(--on-dark)}
+.brew .h2{margin-block:12px 18px}
+.recipe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line-dark);border-radius:16px;overflow:hidden;margin:22px 0}
+.recipe div{background:var(--estate-2);padding:14px 16px}
+.recipe b{display:block;font-family:var(--display);font-weight:400;font-size:1.7rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.recipe span{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;opacity:.65}
+.slider{display:grid;gap:8px;margin-top:6px}
+.slider label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+input[type=range]{width:100%;accent-color:var(--amber-soft)}
+.strength{font-size:.95rem;opacity:.8;min-height:1.6em}
+.brewbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.brew .btn{color:var(--on-dark)}
+.brew .btn.amber{color:#fff}
+.cupstage{position:relative;width:min(100%,460px);aspect-ratio:1;margin-inline:auto}
+.cupstage svg{width:100%;height:100%;overflow:visible}
+.timer{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+.timer b{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,5vw,3.6rem);font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35);line-height:1}
+.timer span{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#fff;opacity:.85;text-shadow:0 1px 8px rgba(0,0,0,.4);margin-top:6px}
+.steam{position:absolute;left:50%;top:-6%;width:40%;height:30%;transform:translateX(-50%);pointer-events:none;opacity:0;transition:opacity .6s}
+.steam.on{opacity:1}
+.steam i{position:absolute;bottom:0;width:14px;height:80%;border-radius:50%;background:linear-gradient(to top,rgba(230,238,232,.35),transparent);filter:blur(6px);animation:steam 3.2s ease-in-out infinite}
+.steam i:nth-child(1){left:20%}.steam i:nth-child(2){left:48%;animation-delay:1s}.steam i:nth-child(3){left:74%;animation-delay:2s}
+@keyframes steam{0%{transform:translateY(20%) scaleX(1);opacity:0}30%{opacity:1}100%{transform:translateY(-40%) scaleX(2.2);opacity:0}}
+.done{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);white-space:nowrap;font-weight:600;color:var(--amber-soft);min-height:1.6em}
+
+/* ---------- process (stacking cards) ---------- */
+.process .head{max-width:640px;margin-bottom:40px}
+.process .head .h2{margin-top:12px}
+.steps{position:relative;display:grid;gap:22px}
+.step{position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px + var(--i) * 16px);min-height:min(56svh,420px);border-radius:28px;padding:clamp(22px,4vw,48px);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(18px,4vw,60px);align-items:center;background:var(--sbg);color:var(--sfg);
+  transform-origin:50% 0;box-shadow:0 -20px 40px -30px rgba(18,39,31,.5)}
+@media (max-width:720px){.step{grid-template-columns:minmax(0,1fr)}}
+.step .num{font-family:var(--mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.step h3{font-family:var(--display);font-weight:350;font-size:clamp(2.6rem,7vw,6rem);line-height:.95;letter-spacing:-.03em;margin-top:10px}
+.step .dur{font-family:var(--mono);font-size:.9rem;margin-top:14px;display:inline-block;border:1px solid currentColor;border-radius:999px;padding:5px 12px;opacity:.85}
+.step p{font-size:clamp(1rem,1.4vw,1.2rem);max-width:44ch;opacity:.88}
+.step p{margin-top:18px}
+.sph{align-self:stretch;min-height:240px;border-radius:20px;overflow:hidden}
+.sph img{width:100%;height:100%;object-fit:cover}
+@media (max-width:720px){.sph{min-height:0;height:24svh}.step h3{font-size:2.6rem}.step p{margin-top:10px;font-size:.95rem}}
+
+/* ---------- marquee ---------- */
+.marquee{background:var(--amber);color:#fff;padding-block:26px;overflow:hidden;display:grid;gap:8px}
+.mrow{display:flex;width:max-content;font-family:var(--display);font-style:italic;font-weight:350;font-size:clamp(2rem,5vw,4rem);line-height:1.1;white-space:nowrap}
+.mrow span{padding-right:.6em}
+.mrow span::after{content:"✦";font-style:normal;font-size:.5em;vertical-align:.3em;padding-left:.6em;opacity:.7}
+.mrow.alt{color:var(--estate)}
+
+/* ---------- photo band ---------- */
+.photoband{position:relative;height:min(92svh,780px);overflow:hidden;display:flex;align-items:center;padding-inline:var(--gutter)}
+.photoband img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;object-position:62% 50%}
+.photoband::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(232,237,233,.85) 0%,rgba(232,237,233,.35) 45%,rgba(232,237,233,0) 70%)}
+.bandtext{position:relative;z-index:1;max-width:560px;display:grid;gap:18px;justify-items:start}
+@media (max-width:760px){.photoband{align-items:flex-start;padding-top:70px}.photoband::after{background:linear-gradient(180deg,rgba(232,237,233,.9) 0%,rgba(232,237,233,.4) 45%,rgba(232,237,233,0) 70%)}.photoband img{object-position:70% 50%}}
+
+/* ---------- letter (subscribe) ---------- */
+.letter .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,6vw,90px);align-items:center}
+@media (max-width:860px){.letter .wrap{grid-template-columns:minmax(0,1fr)}}
+.letter .h2{margin-block:12px 18px}
+.lphoto{margin-top:28px;border-radius:24px;overflow:hidden;aspect-ratio:4/3;max-width:520px}
+.lphoto img{width:100%;height:100%;object-fit:cover}
+.plan{background:var(--paper);border-radius:26px;padding:clamp(20px,3vw,34px);box-shadow:0 30px 60px -40px rgba(18,39,31,.45)}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--mist-2);border-radius:999px;padding:4px;position:relative}
+.seg button{position:relative;z-index:1;border:0;background:transparent;border-radius:999px;padding:10px;font-weight:600;transition:color .3s}
+.seg button[aria-pressed="true"]{color:var(--mist)}
+.seg .pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--estate);transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
+.seg.right .pill{transform:translateX(100%)}
+.planprice{font-family:var(--display);font-size:clamp(2.6rem,5vw,3.6rem);margin-top:22px;line-height:1;font-variant-numeric:tabular-nums}
+.planprice small{font-family:var(--mono);font-size:.8rem;opacity:.6;margin-left:6px}
+.planlist{list-style:none;margin:18px 0 22px;display:grid;gap:8px}
+.planlist li{display:flex;gap:10px;align-items:baseline}
+.planlist li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--leaf);flex:none;transform:translateY(-1px)}
+.form{display:flex;flex-wrap:wrap;gap:10px}
+.form label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.form input{flex:1 1 220px;min-width:0;padding:13px 18px;border-radius:999px;border:1.5px solid var(--line);background:#fff}
+.msg{margin-top:10px;min-height:1.5em;font-weight:600;color:var(--leaf)}
+
+/* ---------- footer ---------- */
+footer{background:var(--estate);color:var(--on-dark);padding:clamp(60px,8vw,100px) var(--gutter) 32px;overflow:hidden}
+.fcols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;max-width:var(--max);margin-inline:auto}
+@media (max-width:760px){.fcols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fcols h4{font-family:var(--mono);font-weight:400;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6;margin-bottom:10px}
+.fcols p,.fcols a{font-size:.95rem;opacity:.88;display:block;text-decoration:none;user-select:text}
+.giant{display:flex;justify-content:center;font-family:var(--display);font-weight:350;font-size:clamp(4rem,19vw,17rem);line-height:.85;letter-spacing:-.04em;margin-top:clamp(40px,7vw,90px);font-variation-settings:"opsz" 144}
+.giant{padding-bottom:.08em}
+.giant .gw{display:inline-block;transition:transform .5s cubic-bezier(.3,1.4,.5,1),color .3s}
+.giant .gw:hover{transform:translateY(-14%) rotate(-4deg);color:var(--amber-soft)}
+.giant .gl{display:inline-block}
+.fine{max-width:var(--max);margin:26px auto 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:.72rem;opacity:.6}
+
+/* ---------- bag drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(18,39,31,.4);z-index:80;opacity:0;pointer-events:none;transition:opacity .35s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);z-index:81;background:var(--paper);transform:translateX(102%);transition:transform .5s cubic-bezier(.2,.9,.2,1);
+  display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 20px) 22px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.drawer.on{transform:none}
+.drawer header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.drawer h3{font-family:var(--display);font-weight:450;font-size:1.7rem}
+.x{border:1.5px solid var(--line);background:transparent;width:38px;height:38px;border-radius:50%;font-size:1.1rem}
+.items{flex:1;overflow:auto;display:grid;align-content:start;gap:12px}
+.item{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px;border-radius:14px;background:var(--mist)}
+.item .sw{width:52px;height:62px;border-radius:8px;object-fit:cover}
+.item b{font-family:var(--display);font-weight:450;font-size:1.05rem;display:block;line-height:1.2}
+.item small{font-family:var(--mono);font-size:.72rem;opacity:.65}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);background:#fff;line-height:1}
+.qty span{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
+.empty{opacity:.7;padding:30px 0;text-align:center}
+.drawer .sum{border-top:1px solid var(--line);padding-top:16px;display:grid;gap:8px}
+.sumrow{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.sumrow.big{font-family:var(--display);font-size:1.4rem}
+.ship{font-size:.85rem;opacity:.75}
+.shipbar{height:6px;border-radius:99px;background:var(--mist-2);overflow:hidden}
+.shipbar i{display:block;height:100%;width:0;background:var(--leaf);transition:width .5s}
+.checkmsg{font-size:.88rem;color:var(--amber);min-height:1.3em}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,140%);z-index:85;background:var(--estate);color:var(--mist);padding:12px 18px;border-radius:999px;font-weight:600;transition:transform .45s cubic-bezier(.3,1.3,.5,1);white-space:nowrap}
+.toast.on{transform:translate(-50%,0)}
+.flyer{position:fixed;z-index:95;pointer-events:none}
+
+/* fallback without GSAP / reduced motion */
+.static .regions{height:auto;overflow:visible}
+.static .rtrack{width:auto;flex-wrap:wrap;height:auto}
+.static .story .w{opacity:1}
+@media (prefers-reduced-motion:reduce){.ripple,.steam i{animation:none}#loader{display:none}}
+</style>
+</head>
+<body>
+
+
+<!-- shared icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="-1 -1 66 66"><path fill="currentColor" fill-rule="evenodd" d="M32.93 9.09 L32.50 9.09 L31.69 10.21 L30.88 11.77 L30.26 13.63 L29.95 15.88 L30.07 18.12 L30.51 20.23 L31.32 22.47 L32.25 24.28 L31.81 26.33 L31.50 28.70 L31.38 28.82 L30.51 27.58 L30.38 25.28 L30.01 23.60 L29.51 22.16 L28.20 19.86 L27.14 18.68 L25.77 17.56 L24.84 17.00 L23.35 16.31 L21.85 15.81 L19.92 15.44 L17.56 15.38 L17.31 15.56 L17.25 15.94 L17.43 18.55 L18.18 21.23 L18.99 22.91 L20.11 24.47 L21.98 26.21 L23.28 27.02 L24.34 27.52 L26.46 28.20 L29.32 28.58 L30.07 29.63 L30.75 31.13 L31.13 32.93 L31.07 54.10 L31.19 54.54 L31.50 54.85 L32.19 54.85 L32.56 54.35 L32.62 44.20 L33.12 42.21 L34.24 39.97 L34.74 39.41 L36.17 39.41 L38.04 39.16 L40.09 38.66 L41.40 38.16 L44.08 36.73 L45.82 35.30 L47.69 33.12 L49.06 30.69 L49.87 28.45 L50.24 26.77 L50.43 25.28 L50.43 23.91 L50.24 23.47 L49.93 23.35 L46.69 23.41 L44.20 23.91 L41.90 24.72 L39.66 25.90 L38.23 26.96 L37.23 27.89 L35.98 29.45 L34.74 31.63 L33.99 33.68 L33.68 34.99 L33.43 36.92 L33.43 38.54 L32.68 39.72 L32.56 39.60 L32.62 31.44 L32.81 29.32 L33.62 24.53 L35.05 22.41 L35.80 20.86 L36.36 18.99 L36.54 17.74 L36.54 16.12 L36.42 15.25 L35.74 13.01 L34.49 10.83 L33.56 9.65Z M48.87 24.78 L48.93 25.65 L48.81 26.52 L48.31 28.58 L47.88 29.76 L46.57 32.19 L45.07 33.99 L43.27 35.49 L41.03 36.73 L38.10 37.67 L35.92 37.91 L35.86 37.73 L37.60 35.67 L41.03 32.37 L44.51 29.63 L44.64 29.20 L44.45 28.76 L43.95 28.51 L43.64 28.58 L42.96 29.01 L40.72 30.75 L38.60 32.62 L35.05 36.36 L34.99 36.05 L35.24 34.68 L35.92 32.56 L36.92 30.63 L37.85 29.39 L39.10 28.14 L40.90 26.83 L42.52 26.02 L44.26 25.40 L46.13 24.96 L47.69 24.78Z M18.80 16.87 L20.61 17.00 L22.04 17.37 L23.16 17.81 L24.40 18.43 L25.34 19.05 L26.77 20.42 L27.46 21.35 L28.14 22.66 L28.76 24.59 L28.76 25.34 L25.84 22.35 L23.10 20.05 L22.85 19.92 L22.29 19.98 L22.04 20.23 L21.91 20.73 L22.29 21.29 L24.34 22.97 L26.65 25.21 L28.02 26.83 L27.95 26.96 L26.96 26.83 L24.96 26.21 L23.04 25.15 L21.35 23.66 L20.54 22.60 L19.55 20.67 L18.86 18.24 L18.74 17.37Z M31.63 14.57 L31.81 14.69 L32.25 15.56 L33.49 17.37 L34.12 19.18 L34.05 20.92 L33.74 21.73 L33.18 22.60 L32.93 22.47 L32.25 20.86 L31.50 18.05 L31.38 16.00 L31.50 14.82Z M32.87 11.21 L33.81 12.45 L34.61 14.13 L35.05 15.88 L35.05 17.12 L34.86 17.00 L34.43 16.12 L33.25 14.44 L32.75 13.45 L32.56 12.82 L32.50 11.95Z M30.32 0.68 L28.14 0.87 L25.21 1.37 L21.17 2.55 L18.93 3.49 L16.19 4.92 L13.45 6.72 L11.14 8.59 L8.59 11.14 L6.54 13.70 L4.92 16.19 L3.55 18.80 L2.43 21.54 L1.43 24.96 L0.87 28.14 L0.68 30.19 L0.68 33.81 L1.00 36.67 L1.74 40.22 L2.43 42.40 L3.55 45.14 L4.86 47.63 L6.66 50.37 L9.15 53.35 L11.14 55.28 L13.70 57.34 L15.94 58.83 L18.99 60.45 L21.91 61.63 L24.96 62.51 L28.14 63.07 L30.32 63.25 L33.37 63.25 L35.67 63.07 L39.47 62.38 L42.02 61.63 L45.07 60.39 L47.69 59.02 L50.18 57.40 L52.61 55.47 L55.04 53.11 L56.72 51.11 L58.83 48.06 L60.39 45.14 L61.39 42.77 L62.26 40.03 L62.94 36.73 L63.25 33.87 L63.25 30.19 L62.88 26.83 L62.44 24.65 L61.51 21.54 L60.45 18.93 L58.96 16.06 L57.28 13.51 L54.97 10.71 L52.67 8.47 L49.99 6.35 L47.44 4.73 L44.89 3.42 L42.09 2.30 L39.28 1.49 L36.30 0.93 L33.68 0.68Z M30.13 2.18 L33.93 2.18 L36.23 2.43 L38.60 2.86 L42.21 3.92 L44.45 4.86 L46.94 6.16 L49.68 7.97 L51.67 9.59 L53.48 11.33 L55.47 13.63 L57.46 16.50 L58.96 19.30 L59.83 21.29 L60.64 23.72 L61.39 27.02 L61.76 30.13 L61.76 33.81 L61.45 36.61 L60.95 39.10 L60.02 42.15 L59.08 44.39 L57.77 46.88 L56.28 49.18 L54.35 51.61 L52.36 53.67 L49.43 56.09 L47.07 57.65 L44.08 59.21 L41.77 60.14 L38.79 61.01 L36.54 61.45 L33.74 61.76 L30.19 61.76 L28.33 61.57 L25.46 61.07 L22.35 60.20 L19.86 59.21 L17.18 57.84 L14.94 56.40 L12.20 54.23 L9.65 51.67 L7.47 48.93 L5.98 46.57 L4.79 44.26 L3.92 42.15 L3.24 40.03 L2.61 37.35 L2.18 33.81 L2.12 31.50 L2.43 27.83 L2.99 24.84 L3.92 21.79 L4.73 19.80 L6.04 17.25 L7.84 14.44 L9.71 12.14 L12.14 9.71 L14.44 7.84 L17.00 6.16 L19.61 4.79 L21.91 3.86 L24.84 2.99 L27.70 2.43Z"/></symbol>
+  <symbol id="bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div id="loader" aria-hidden="true">
+  <div class="inner">
+    <svg class="lmark" aria-hidden="true"><use href="#mark"/></svg>
+    <div class="word">Kandara</div>
+  </div>
+</div>
+<div class="cursor" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#top"><svg aria-hidden="true"><use href="#mark"/></svg>Kandara</a>
+  <ul>
+    <li><a href="#regions">Regions</a></li>
+    <li><a href="#teas">Teas</a></li>
+    <li><a href="#brew">Brew</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#letter">Subscribe</a></li>
+  </ul>
+  <button class="bagbtn" id="bagbtn" type="button" aria-label="Open bag"><svg aria-hidden="true"><use href="#bag"/></svg>Bag <span class="count" id="count">0</span></button>
+</nav>
+
+<main>
+<!-- HERO -->
+<section class="hero" id="top">
+  <canvas id="leaves" aria-hidden="true"></canvas>
+  <div>
+    <div class="eyebrow hrv">Ceylon tea atelier · Est. in the hills</div>
+    <h1 id="headline">Tea from <em>above</em> the clouds.</h1>
+    <p class="lede hrv">Single-estate Ceylon teas picked above 1,200 metres and sealed in tins within 72 hours of the last firing.</p>
+    <div class="actions hrv">
+      <a class="btn solid" href="#teas">Shop the teas</a>
+      <a class="btn" href="#brew">Open the brew lab</a>
+    </div>
+    <div class="stats hrv">
+      <div><b data-count="7">7</b>tea regions</div>
+      <div><b data-count="18">18</b>partner estates</div>
+      <div><b data-count="72">72</b>hours, fire to tin</div>
+    </div>
+  </div>
+  <div class="cupwrap hrv" id="cupwrap">
+    <div class="spin">
+      <img class="cupimg" src="img/hero.webp" alt="A cup of Ceylon tea on a saucer with fresh tea leaves, seen from above">
+      <svg class="ripples" viewBox="0 0 520 520" aria-hidden="true">
+        <defs><clipPath id="liqclip"><circle cx="260" cy="260" r="97"/></clipPath></defs>
+        <g clip-path="url(#liqclip)" id="ripples"><circle class="ripple" cx="260" cy="260" r="97"/><circle class="ripple r2" cx="260" cy="260" r="97"/><circle class="ripple r3" cx="260" cy="260" r="97"/></g>
+      </svg>
+    </div>
+    <div class="cupnote">Cloudline No.1 · 95 °C · 3 min</div>
+  </div>
+  <div class="scrollcue">Scroll</div>
+</section>
+
+<!-- STORY -->
+<section class="section story" id="story">
+  <div class="sbg"><img src="img/story.webp" alt=""></div>
+  <div class="wrap">
+    <div class="eyebrow">Why altitude matters</div>
+    <p id="storytext">Ceylon tea grows across seven regions, from warm southern hills to gardens above two thousand metres. Higher up, cold nights slow the leaf down, and a slower leaf makes a brighter, more fragrant cup.</p>
+  </div>
+</section>
+
+<!-- REGIONS -->
+<section class="regions" id="regions">
+  <svg class="ridge" viewBox="0 0 2600 400" preserveAspectRatio="none" aria-hidden="true"><path class="back" id="ridgeBack"/><path class="front" id="ridgeFront"/></svg>
+  <div class="altimeter" aria-live="off">Altitude<b id="alt">0 m</b></div>
+  <div class="rtrack" id="rtrack">
+    <div class="rintro">
+      <div class="eyebrow">The seven regions</div>
+      <h2 class="h2">Climb from sea level to the <em>cloud line.</em></h2>
+      <p class="lede">Each region gives the leaf a different character. Low-grown teas are dark and malty. The higher you go, the lighter and more floral the cup becomes.</p>
+    </div>
+  </div>
+  <div class="rprog"><i id="rprog"></i></div>
+</section>
+
+<!-- TEAS -->
+<section class="section teas" id="teas">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="eyebrow">The collection</div>
+        <h2 class="h2">Six teas, <em>six gardens.</em></h2>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter teas">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+        <button class="chip" type="button" data-f="Black" aria-pressed="false">Black</button>
+        <button class="chip" type="button" data-f="Green" aria-pressed="false">Green</button>
+        <button class="chip" type="button" data-f="White" aria-pressed="false">White</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<!-- BREW LAB -->
+<section class="section brew" id="brew">
+  <div class="wrap brewgrid">
+    <div>
+      <div class="eyebrow">Brew lab</div>
+      <h2 class="h2">Steep it <em>right.</em></h2>
+      <p class="lede">Pick a tea to load its recipe. Move the slider to see how the cup changes, then start the timer and we'll tell you when to take the leaves out.</p>
+      <div class="filters" id="brewchips" role="group" aria-label="Choose a tea to brew" style="margin-top:22px"></div>
+      <div class="recipe">
+        <div><b id="rTemp">95 °C</b><span>Water</span></div>
+        <div><b id="rLeaf">2.5 g</b><span>Per 250 ml</span></div>
+        <div><b id="rTime">3:00</b><span>Steep</span></div>
+      </div>
+      <div class="slider">
+        <label for="steep"><span>Your steep</span><span id="steepVal">3:00</span></label>
+        <input id="steep" type="range" min="1" max="7" step="0.5" value="3">
+      </div>
+      <p class="strength" id="strength">Balanced. This is the estate's recommendation.</p>
+      <div class="brewbtns">
+        <button class="btn amber" id="startBtn" type="button">Start timer</button>
+        <button class="btn" id="previewBtn" type="button">Preview in 10 s</button>
+        <button class="btn" id="resetBtn" type="button">Reset</button>
+      </div>
+    </div>
+    <div class="cupstage">
+      <div class="steam" id="steam"><i></i><i></i><i></i></div>
+      <svg viewBox="0 0 400 400" aria-label="Tea colour as it steeps">
+        <defs><radialGradient id="glass" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2A4A3D"/><stop offset="1" stop-color="#16302A"/></radialGradient></defs>
+        <circle cx="200" cy="200" r="186" fill="url(#glass)"/>
+        <circle cx="200" cy="200" r="170" fill="none" stroke="rgba(230,238,232,.14)" stroke-width="12"/>
+        <circle id="ring" cx="200" cy="200" r="170" fill="none" stroke="#E9A250" stroke-width="12" stroke-linecap="round" transform="rotate(-90 200 200)" stroke-dasharray="1068" stroke-dashoffset="1068"/>
+        <circle cx="200" cy="200" r="140" fill="#F5F7F4"/>
+        <circle id="liquor" cx="200" cy="200" r="122" fill="#EAF0EE"/>
+        <ellipse cx="166" cy="158" rx="40" ry="14" fill="#fff" opacity=".25" transform="rotate(-28 166 158)"/>
+      </svg>
+      <div class="timer"><b id="clock">3:00</b><span id="clockLabel">Ready to steep</span></div>
+      <div class="done" id="done" role="status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section process" id="process">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">From bush to tin</div>
+      <h2 class="h2">Five steps, <em>one day</em> and a half.</h2>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<section class="marquee" aria-label="Tasting notes">
+  <div class="mrow" id="m1"></div>
+  <div class="mrow alt" id="m2"></div>
+</section>
+
+<!-- BAND -->
+<section class="photoband" aria-label="Kandara">
+  <img src="img/band.webp" alt="A cup of tea on a wooden ledge above misty tea hills">
+  <div class="bandtext"><div class="eyebrow">Tasting room · Colombo 07</div><h2 class="h2">Brewed close to <em>where it grew.</em></h2><a class="btn solid" href="#letter">Get the Estate Letter</a></div>
+</section>
+
+<!-- LETTER -->
+<section class="section letter" id="letter">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">The Estate Letter</div>
+      <h2 class="h2">A new garden <em>every month.</em></h2>
+      <p class="lede">We pick the best lot from a different estate each month and post it with tasting notes and the story of the people who grew it. Pause or cancel any time.</p>
+      <div class="lphoto"><img src="img/letter.webp" alt="An open Kandara subscription box with a tea tin, a letter and loose tea"></div>
+    </div>
+    <div class="plan">
+      <div class="seg" id="seg">
+        <span class="pill"></span>
+        <button type="button" aria-pressed="true" data-plan="0">One tin</button>
+        <button type="button" aria-pressed="false" data-plan="1">Three tins</button>
+      </div>
+      <div class="planprice" id="planprice">Rs 3,400<small>/ month</small></div>
+      <ul class="planlist" id="planlist"></ul>
+      <form class="form" id="letterForm" novalidate>
+        <label for="lemail">Email address</label>
+        <input id="lemail" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <button class="btn solid" type="submit">Join the letter</button>
+      </form>
+      <div class="msg" id="lmsg" role="status"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="fcols">
+    <div><h4>Tasting room</h4><p>Ward Place, Colombo 07</p><p>Tue to Sun, 10:00 to 18:00</p></div>
+    <div><h4>Contact</h4><p>hello@kandara.tea</p></div>
+    <div><h4>Shop</h4><a href="#teas">All teas</a><a href="#letter">Estate Letter</a><a href="#brew">Brew lab</a></div>
+    <div><h4>Delivery</h4><p>Island-wide in 2 to 4 days. Free over Rs 10,000.</p></div>
+  </div>
+  <div class="giant" id="giant" aria-label="Kandara"></div>
+  <div class="fine"><span>Kandara is a fictional concept brand. Teas, prices and estates are for demonstration.</span><span>Concept site by Ravishan Tennakoon</span></div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Your bag" aria-hidden="true" data-lenis-prevent>
+  <header><h3>Your bag</h3><button class="x" id="closeBag" type="button" aria-label="Close bag">✕</button></header>
+  <div class="items" id="items"></div>
+  <div class="sum">
+    <div class="ship" id="shipnote"></div>
+    <div class="shipbar"><i id="shipbar"></i></div>
+    <div class="sumrow big"><span>Subtotal</span><span id="subtotal">Rs 0</span></div>
+    <button class="btn solid" id="checkout" type="button">Checkout</button>
+    <div class="checkmsg" id="checkmsg" role="status"></div>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(function(){
+  const $ = (s, el=document) => el.querySelector(s);
+  const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = matchMedia('(pointer: fine)').matches;
+  const hasG = !!(window.gsap && window.ScrollTrigger);
+  const rs = n => 'Rs ' + n.toLocaleString('en-US');
+  const mmss = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+
+  /* ================= data ================= */
+  const TEAS = [
+    {id:'cloudline', img:'cloudline', name:'Cloudline No.1', type:'Black', region:'Nuwara Eliya', grade:'FBOP', notes:'Floral and bright, with citrus peel and a pale gold cup.', temp:95, leaf:2.5, time:3,   price:3400, size:'100 g', tin:'#9FC3B0', bg:'#DCE8E0', liq:'#D9A441'},
+    {id:'uva', img:'uva',       name:'Uva Quarter',    type:'Black', region:'Uva',          grade:'BOP',  notes:'Mellow and brisk, with a cool wintergreen lift.',          temp:95, leaf:2.5, time:4,   price:3100, size:'100 g', tin:'#2F5D62', bg:'#D5E2E1', liq:'#B5561F'},
+    {id:'dimbula', img:'dimbula',   name:'Dimbula Morning',type:'Black', region:'Dimbula',      grade:'BOPF', notes:'Crisp and toasty, with orange zest. Made for milk.',       temp:95, leaf:2.5, time:4,   price:2600, size:'100 g', tin:'#D9824A', bg:'#F1DFD0', liq:'#A9481C'},
+    {id:'ruhuna', img:'ruhuna',    name:'Ruhuna Night',   type:'Black', region:'Ruhuna',       grade:'OP1',  notes:'Malty and deep, with cocoa and a dark red cup.',            temp:98, leaf:3,   time:5,   price:2400, size:'100 g', tin:'#4A2C2A', bg:'#E6D6D2', liq:'#7E2A12'},
+    {id:'silver', img:'silver-tips',    name:'Silver Tips',    type:'White', region:'Nuwara Eliya', grade:'Tips', notes:'Honey and melon, soft and almost clear.',                   temp:80, leaf:3,   time:3,   price:7800, size:'50 g',  tin:'#D9D4C4', bg:'#EEEBE2', liq:'#E2CF8E'},
+    {id:'kandy', img:'kandy-green',     name:'Kandy Green',    type:'Green', region:'Kandy',        grade:'Pekoe',notes:'Fresh grass and toasted rice, with a jasmine finish.',     temp:80, leaf:2,   time:2.5, price:2900, size:'100 g', tin:'#6F9561', bg:'#DDE8D6', liq:'#B9BC5E'}
+  ];
+  const REGIONS = [
+    {name:'Ruhuna',         band:'Low grown',  lo:0,    hi:600,  tint:'#7E2A12', cup:'Malty and dark, with a sweet finish. Strong enough for plenty of milk.'},
+    {name:'Sabaragamuwa',   band:'Low grown',  lo:100,  hi:750,  tint:'#8E3B16', cup:'Rich and syrupy, with a hint of caramel and a red-brown cup.'},
+    {name:'Kandy',          band:'Mid grown',  lo:650,  hi:1300, tint:'#A9481C', cup:'Full and bright. A coppery cup from the island\'s first tea country.'},
+    {name:'Uva',            band:'High grown', lo:900,  hi:1600, tint:'#B5561F', cup:'Mellow, with a cool wintergreen note when the dry winds blow.'},
+    {name:'Uda Pussellawa', band:'High grown', lo:950,  hi:1600, tint:'#C46A1B', cup:'Delicate and rosy, lighter than its neighbours on either side.'},
+    {name:'Dimbula',        band:'High grown', lo:1100, hi:1600, tint:'#CF8A2E', cup:'Crisp and floral, a golden-orange cup with real bite.'},
+    {name:'Nuwara Eliya',   band:'Highest',    lo:1800, hi:2200, tint:'#B88A1E', cup:'Light, fragrant and pale gold. The highest gardens on the island.'}
+  ];
+  const STEPS = [
+    {n:'Pluck',   d:'Every 7 to 10 days', bg:'#3F6B47', fg:'#F5F7F4', t:'Pickers take two leaves and a bud, by hand, from each bush. Only the youngest growth makes fine tea.',
+     ic:'<path d="M32 54V20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M32 12c-6 6-6 12 0 16 6-4 6-10 0-16Z" fill="currentColor"/><path d="M32 40c-9 1-16-5-18-14 9-1 16 5 18 14Z M32 46c9 1 16-5 18-14-9-1-16 5-18 14Z" fill="none" stroke="currentColor" stroke-width="3"/>'},
+    {n:'Wither',  d:'14 to 18 hours', bg:'#DCE8E0', fg:'#12271F', t:'The leaf is spread in long troughs while fans move air through it, until it turns soft and loses around half its water.',
+     ic:'<path d="M8 40h48M8 48h48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M14 30c6-8 12-8 18 0s12 8 18 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M14 20c6-8 12-8 18 0s12 8 18 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".5"/>'},
+    {n:'Roll',    d:'About 30 minutes', bg:'#C46A1B', fg:'#FFFFFF', t:'Rollers twist the leaf to break its cells. The juices that come out are what will give the cup its colour and taste.',
+     ic:'<circle cx="32" cy="32" r="20" fill="none" stroke="currentColor" stroke-width="3"/><path d="M32 16c8 4 8 28 0 32M22 20c10 2 12 22 0 26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'},
+    {n:'Oxidise', d:'1 to 3 hours', bg:'#7E2A12', fg:'#F5F7F4', t:'On cool floors the leaf turns from green to bright copper. Green and white teas skip this step to stay fresh and pale.',
+     ic:'<path d="M12 46c10-20 30-20 40 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="22" r="8" fill="currentColor"/><path d="M32 6v4M48 22h4M12 22h4M43 11l3-3M18 11l-3-3" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'},
+    {n:'Fire',    d:'About 20 minutes', bg:'#12271F', fg:'#E6EEE8', t:'Hot air at around 110 °C dries the leaf and locks in the flavour. It is then sorted into grades and sealed within 72 hours.',
+     ic:'<path d="M32 8c4 10 14 14 14 28a14 14 0 0 1-28 0c0-8 4-12 7-16 1 5 3 7 6 8-1-8 0-14 1-20Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>'}
+  ];
+  const PLANS = [
+    {price:3400, items:['One 100 g tin from a new estate','Printed tasting notes and estate story','Free delivery, pause any month']},
+    {price:8900, items:['Three 100 g tins: the lot of the month plus two pairings','Printed tasting notes and estate story','Free delivery and first pick of rare lots']}
+  ];
+  const NOTES = ['Malty','Honey','Wintergreen','Citrus peel','Toasted bread','Rose','Copper','Cocoa','Jasmine','Melon','Caramel','Fresh grass'];
+
+  /* ================= headline split ================= */
+  const h1 = $('#headline');
+  (function split(){
+    const parts = [];
+    h1.childNodes.forEach(n => {
+      const em = n.nodeType === 1;
+      (n.textContent).split(/(\s+)/).forEach(w => {
+        if (!w) return;
+        if (/^\s+$/.test(w)) { parts.push(' '); return; }
+        const chars = [...w].map(c => `<span class="ch">${c}</span>`).join('');
+        parts.push(em ? `<em class="wd">${chars}</em>` : `<span class="wd">${chars}</span>`);
+      });
+    });
+    h1.setAttribute('aria-label', h1.textContent);
+    h1.innerHTML = parts.join('');
+  })();
+
+  /* ================= story words ================= */
+  const story = $('#storytext');
+  const hiWords = ['seven','two','thousand','metres.','brighter,','fragrant'];
+  story.innerHTML = story.textContent.trim().split(/\s+/).map(w => `<span class="w${hiWords.includes(w) ? ' hi' : ''}">${w}</span>`).join(' ');
+
+  /* ================= regions ================= */
+  const rtrack = $('#rtrack');
+  REGIONS.forEach((r,i) => {
+    const H = 130, max = 2400, y = v => H - v / max * H;
+    const el = document.createElement('article');
+    el.className = 'rcard'; el.style.setProperty('--tint', r.tint);
+    el.innerHTML = `<div class="rimg"><img src="img/region-${r.name.toLowerCase().replace(/ /g,'-')}.webp" alt="Tea gardens in ${r.name}"></div><div class="band">${String(i+1).padStart(2,'0')} · ${r.band}</div>
+      <h3>${r.name}</h3><p>${r.cup}</p>
+      <div class="meter">
+        <svg viewBox="0 0 56 ${H}" aria-hidden="true">
+          <line x1="40" x2="40" y1="0" y2="${H}" stroke="rgba(18,39,31,.18)" stroke-width="8" stroke-linecap="round"/>
+          <line x1="40" x2="40" y1="${y(r.hi)}" y2="${y(r.lo)}" stroke="${r.tint}" stroke-width="8" stroke-linecap="round"/>
+          <text x="0" y="8" font-family="DM Mono, monospace" font-size="9" fill="currentColor" opacity=".6">2,400</text>
+          <text x="0" y="${H/2+3}" font-family="DM Mono, monospace" font-size="9" fill="currentColor" opacity=".6">1,200</text>
+          <text x="0" y="${H-1}" font-family="DM Mono, monospace" font-size="9" fill="currentColor" opacity=".6">0 m</text>
+        </svg>
+        <div class="range">${r.lo.toLocaleString('en-US')}–${r.hi.toLocaleString('en-US')} m<small>Garden elevation</small></div>
+      </div>`;
+    rtrack.appendChild(el);
+  });
+  // ridge silhouettes that climb from left to right
+  (function ridge(){
+    const mk = (seed, base, amp, rough) => {
+      let d = 'M0 400 ', s = seed;
+      const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+      for (let x = 0; x <= 2600; x += 40) {
+        const climb = base - (x / 2600) * 230;
+        const y = climb + Math.sin(x / 210 + seed) * amp + (rnd() - .5) * rough;
+        d += `L${x} ${Math.max(20, y).toFixed(1)} `;
+      }
+      return d + 'L2600 400 Z';
+    };
+    $('#ridgeBack').setAttribute('d', mk(3, 330, 34, 26));
+    $('#ridgeFront').setAttribute('d', mk(7, 370, 22, 18));
+  })();
+
+  /* ================= tea cards ================= */
+  const grid = $('#grid');
+  const tinHTML = t => `<div class="tinbox"><img src="img/tin-${t.img}.webp" alt="${t.name} tea tin"><div class="lbl2" aria-hidden="true"><svg><use href="#mark"/></svg><b>${t.name}</b><i>${t.region}</i></div></div>`;
+  TEAS.forEach(t => {
+    const c = document.createElement('article');
+    c.className = 'card'; c.dataset.type = t.type; c.dataset.id = t.id; c.style.setProperty('--bgt', t.bg);
+    c.innerHTML = `<div class="stage"><span class="type">${t.type} · ${t.grade}</span>${tinHTML(t)}</div>
+      <div><h3>${t.name}</h3><div class="meta">${t.region} · ${t.temp} °C · ${mmss(t.time*60)} min</div></div>
+      <p class="notes">${t.notes}</p>
+      <div class="foot"><div class="price">${rs(t.price)}<small>${t.size}</small></div>
+        <div class="acts"><button class="mini" type="button" data-brew="${t.id}">Brew</button><button class="mini add" type="button" data-add="${t.id}">Add</button></div></div>`;
+    grid.appendChild(c);
+  });
+
+  // filter (Flip when available)
+  $$('#filters .chip').forEach(ch => ch.addEventListener('click', () => {
+    const f = ch.dataset.f;
+    $$('#filters .chip').forEach(c => c.setAttribute('aria-pressed', c === ch));
+    const cards = $$('.card', grid);
+    const state = window.Flip && !reduce ? Flip.getState(cards) : null;
+    cards.forEach(c => c.classList.toggle('gone', f !== 'all' && c.dataset.type !== f));
+    if (state) Flip.from(state, { duration: .6, ease: 'power3.inOut', scale: true, absolute: true,
+      onEnter: els => gsap.fromTo(els, { opacity: 0, scale: .85 }, { opacity: 1, scale: 1, duration: .5 }),
+      onLeave: els => gsap.to(els, { opacity: 0, scale: .85, duration: .4 }) });
+    refreshST();
+  }));
+
+  // tilt + glare
+  if (fine && !reduce) $$('.card', grid).forEach(c => {
+    c.addEventListener('pointermove', e => {
+      const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      c.style.transform = `perspective(900px) rotateY(${(px - .5) * 10}deg) rotateX(${(.5 - py) * 8}deg) translateY(-4px)`;
+      c.style.setProperty('--gx', px * 100 + '%'); c.style.setProperty('--gy', py * 100 + '%');
+    });
+    c.addEventListener('pointerleave', () => { c.style.transform = ''; });
+  });
+
+  /* ================= bag ================= */
+  let bag = {};
+  try { bag = JSON.parse(localStorage.getItem('kandara-bag') || '{}') || {}; } catch (e) { bag = {}; }
+  const saveBag = () => { try { localStorage.setItem('kandara-bag', JSON.stringify(bag)); } catch (e) {} };
+  const byId = id => TEAS.find(t => t.id === id);
+  const FREE = 10000;
+  function renderBag(){
+    const ids = Object.keys(bag).filter(id => bag[id] > 0 && byId(id));
+    const n = ids.reduce((a,id) => a + bag[id], 0);
+    const sub = ids.reduce((a,id) => a + bag[id] * byId(id).price, 0);
+    $('#count').textContent = n;
+    $('#items').innerHTML = ids.length ? ids.map(id => { const t = byId(id); return `
+      <div class="item"><img class="sw" src="img/tin-${t.img}.webp" alt="">
+        <div><b>${t.name}</b><small>${t.size} · ${rs(t.price)}</small></div>
+        <div class="qty"><button type="button" data-q="-1" data-id="${id}" aria-label="One less ${t.name}">−</button><span>${bag[id]}</span><button type="button" data-q="1" data-id="${id}" aria-label="One more ${t.name}">+</button></div>
+      </div>`; }).join('') : '<p class="empty">Your bag is empty. Add a tin from the collection.</p>';
+    $('#subtotal').textContent = rs(sub);
+    $('#shipbar').style.width = Math.min(100, sub / FREE * 100) + '%';
+    $('#shipnote').textContent = sub >= FREE ? 'Free island-wide delivery unlocked.' : `Add ${rs(FREE - sub)} more for free delivery.`;
+    $('#checkmsg').textContent = '';
+  }
+  $('#items').addEventListener('click', e => {
+    const b = e.target.closest('[data-q]'); if (!b) return;
+    bag[b.dataset.id] = Math.max(0, (bag[b.dataset.id] || 0) + +b.dataset.q);
+    if (!bag[b.dataset.id]) delete bag[b.dataset.id];
+    saveBag(); renderBag();
+  });
+  const openBag = on => {
+    $('#drawer').classList.toggle('on', on); $('#scrim').classList.toggle('on', on);
+    $('#drawer').setAttribute('aria-hidden', !on);
+    if (lenis) on ? lenis.stop() : lenis.start();
+  };
+  $('#bagbtn').addEventListener('click', () => openBag(true));
+  $('#closeBag').addEventListener('click', () => openBag(false));
+  $('#scrim').addEventListener('click', () => openBag(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') openBag(false); });
+  $('#checkout').addEventListener('click', () => {
+    $('#checkmsg').textContent = Object.keys(bag).length ? 'This is a concept store, so checkout is switched off.' : 'Add a tea first.';
+  });
+  let toastT;
+  const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); };
+
+  grid.addEventListener('click', e => {
+    const add = e.target.closest('[data-add]'), brewB = e.target.closest('[data-brew]');
+    if (brewB) { selectBrew(brewB.dataset.brew); scrollToEl('#brew'); return; }
+    if (!add) return;
+    const t = byId(add.dataset.add);
+    bag[t.id] = (bag[t.id] || 0) + 1; saveBag();
+    const done = () => { renderBag(); toast(`${t.name} added to your bag`);
+      if (window.gsap) gsap.fromTo('#count', { scale: 1.6 }, { scale: 1, duration: .5, ease: 'back.out(3)' }); };
+    const tin = add.closest('.card').querySelector('.tinbox');
+    if (!window.gsap || reduce) return done();
+    // fly a copy of the tin into the bag
+    const a = tin.getBoundingClientRect(), b = $('#bagbtn').getBoundingClientRect();
+    const f = tin.cloneNode(true); f.classList.add('flyer');
+    Object.assign(f.style, { left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', margin: 0, transform: 'none', top: a.top + 'px' });
+    document.body.appendChild(f);
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    gsap.timeline({ onComplete: () => { f.remove(); done(); } })
+      .to(f, { x: dx, duration: .8, ease: 'power1.inOut' }, 0)
+      .to(f, { y: dy, duration: .8, ease: 'back.in(1.6)' }, 0)
+      .to(f, { scale: .18, rotation: 200, duration: .8, ease: 'power2.in' }, 0)
+      .to(f, { opacity: 0, duration: .15 }, .68);
+  });
+  renderBag();
+
+  /* ================= brew lab ================= */
+  const chipsB = $('#brewchips');
+  TEAS.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.id = t.id; b.id = 'brew-' + t.id;
+    b.textContent = t.name; b.addEventListener('click', () => selectBrew(t.id)); chipsB.appendChild(b);
+  });
+  const water = [234,240,238];
+  const hex = h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, k) => `rgb(${a.map((v,i) => Math.round(v + (b[i] - v) * k)).join(',')})`;
+  const RING = 1068;
+  let cur = TEAS[0], steepMin = cur.time, timer = null, t0 = 0, dur = 0;
+  function colourAt(min){ // extraction curve relative to the recommended time
+    const k = 1 - Math.exp(-2.4 * min / cur.time);
+    const target = hex(cur.liq).map(v => v * (min > cur.time ? Math.max(.62, 1 - (min - cur.time) * .09) : 1));
+    return mix(water, target, Math.min(1, k / (1 - Math.exp(-2.4))));
+  }
+  function strengthText(){
+    const r = steepMin / cur.time;
+    if (r < .8) return 'Light. Brighter and softer than the estate intends.';
+    if (r <= 1.15) return 'Balanced. This is the estate\'s recommendation.';
+    if (r <= 1.5) return 'Strong. Good with milk, a little more bitter on its own.';
+    return 'Very strong. Expect a dark, tannic cup.';
+  }
+  function paintStatic(){
+    $('#liquor').setAttribute('fill', colourAt(steepMin));
+    $('#steepVal').textContent = mmss(steepMin * 60);
+    $('#clock').textContent = mmss(steepMin * 60);
+    $('#strength').textContent = strengthText();
+  }
+  function selectBrew(id){
+    stop(); cur = byId(id); steepMin = cur.time;
+    $$('#brewchips .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.id === id));
+    $('#rTemp').textContent = cur.temp + ' °C'; $('#rLeaf').textContent = cur.leaf + ' g'; $('#rTime').textContent = mmss(cur.time * 60);
+    $('#steep').value = steepMin;
+    $('#clockLabel').textContent = 'Ready to steep'; $('#done').textContent = '';
+    $('#ring').setAttribute('stroke-dashoffset', RING);
+    paintStatic();
+  }
+  $('#steep').addEventListener('input', e => { if (timer) return; steepMin = +e.target.value; paintStatic(); });
+  function stop(){ if (timer) cancelAnimationFrame(timer); timer = null; $('#steam').classList.remove('on'); }
+  function run(seconds, label){
+    stop(); dur = seconds * 1000; t0 = performance.now();
+    $('#steam').classList.add('on'); $('#done').textContent = ''; $('#clockLabel').textContent = label;
+    const tick = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      $('#liquor').setAttribute('fill', colourAt(steepMin * p));
+      $('#ring').setAttribute('stroke-dashoffset', RING * (1 - p));
+      $('#clock').textContent = mmss(steepMin * 60 * (1 - p));
+      if (p < 1) timer = requestAnimationFrame(tick);
+      else { timer = null; $('#steam').classList.remove('on'); $('#clockLabel').textContent = 'Done';
+        $('#done').textContent = `Ready. Take the leaves out of your ${cur.name}.`;
+        if (window.gsap && !reduce) gsap.fromTo('.cupstage svg', { scale: 1 }, { scale: 1.04, yoyo: true, repeat: 1, duration: .25 }); }
+    };
+    timer = requestAnimationFrame(tick);
+  }
+  $('#startBtn').addEventListener('click', () => run(steepMin * 60, 'Steeping'));
+  $('#previewBtn').addEventListener('click', () => run(10, 'Preview'));
+  $('#resetBtn').addEventListener('click', () => selectBrew(cur.id));
+  selectBrew(cur.id);
+
+  /* ================= process ================= */
+  const steps = $('#steps');
+  STEPS.forEach((s,i) => {
+    const el = document.createElement('article');
+    el.className = 'step'; el.style.setProperty('--i', i); el.style.setProperty('--sbg', s.bg); el.style.setProperty('--sfg', s.fg);
+    el.innerHTML = `<div><div class="num">Step ${i+1} of 5</div><h3>${s.n}</h3><span class="dur">${s.d}</span><p>${s.t}</p></div>
+      <div class="sph"><img src="img/step-${s.n.toLowerCase()}.webp" alt="${s.t.split('.')[0]}"></div>`;
+    steps.appendChild(el);
+  });
+
+  /* ================= marquee + plan + footer ================= */
+  const row = arr => arr.concat(arr).map(n => `<span>${n}</span>`).join('');
+  $('#m1').innerHTML = row(NOTES); $('#m2').innerHTML = row(NOTES.slice().reverse());
+  let plan = 0;
+  function renderPlan(){
+    $$('#seg button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.plan === plan));
+    $('#seg').classList.toggle('right', plan === 1);
+    $('#planprice').innerHTML = `${rs(PLANS[plan].price)}<small>/ month</small>`;
+    $('#planlist').innerHTML = PLANS[plan].items.map(x => `<li>${x}</li>`).join('');
+  }
+  $$('#seg button').forEach(b => b.addEventListener('click', () => { plan = +b.dataset.plan; renderPlan();
+    if (window.gsap && !reduce) gsap.from('#planprice', { y: 12, opacity: 0, duration: .4 }); }));
+  renderPlan();
+  $('#letterForm').addEventListener('submit', e => {
+    e.preventDefault(); const v = $('#lemail').value.trim();
+    $('#lmsg').textContent = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+      ? `You're on the list. The first letter goes to ${v} next month.` : 'Enter an email address like name@example.com.';
+  });
+  $('#giant').innerHTML = [...'Kandara'].map(c => `<span class="gw" aria-hidden="true"><span class="gl">${c}</span></span>`).join('');
+
+  /* ================= falling leaves (hero canvas) ================= */
+  (function leaves(){
+    const cv = $('#leaves'), ctx = cv.getContext('2d'); if (!ctx) return;
+    let W = 0, H = 0, dpr = 1, mouse = {x: -999, y: -999}, run = true, raf;
+    const greens = ['#3F6B47','#5C8A5F','#7FA06A','#2E5238'];
+    const L = Array.from({length: innerWidth < 700 ? 14 : 26}, () => ({ x: Math.random(), y: Math.random(), s: 8 + Math.random() * 16,
+      r: Math.random() * 6.28, vr: (Math.random() - .5) * .01, vy: .00035 + Math.random() * .0006, sw: Math.random() * 6.28, c: greens[Math.floor(Math.random() * 4)], a: .35 + Math.random() * .45, ox: 0, oy: 0 }));
+    const size = () => { const r = cv.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+    const leaf = l => {
+      const x = l.x * W + l.ox, y = l.y * H + l.oy;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(l.r); ctx.globalAlpha = l.a; ctx.fillStyle = l.c;
+      ctx.beginPath(); ctx.moveTo(-l.s, 0); ctx.bezierCurveTo(-l.s * .4, -l.s * .62, l.s * .5, -l.s * .5, l.s, 0); ctx.bezierCurveTo(l.s * .5, l.s * .5, -l.s * .4, l.s * .62, -l.s, 0); ctx.fill();
+      ctx.strokeStyle = 'rgba(232,237,233,.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-l.s * .9, 0); ctx.lineTo(l.s * .9, 0); ctx.stroke();
+      ctx.restore();
+    };
+    const frame = () => {
+      ctx.clearRect(0, 0, W, H);
+      L.forEach(l => {
+        if (!reduce) {
+          l.y += l.vy; l.sw += .012; l.x += Math.sin(l.sw) * .0008; l.r += l.vr;
+          if (l.y > 1.05) { l.y = -.05; l.x = Math.random(); }
+          const dx = l.x * W + l.ox - mouse.x, dy = l.y * H + l.oy - mouse.y, d = Math.hypot(dx, dy);
+          if (d < 130) { l.ox += dx / d * (130 - d) * .06; l.oy += dy / d * (130 - d) * .06; }
+          l.ox *= .96; l.oy *= .96;
+        }
+        leaf(l);
+      });
+      if (run && !reduce) raf = requestAnimationFrame(frame);
+    };
+    size(); addEventListener('resize', size);
+    $('.hero').addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+    $('.hero').addEventListener('pointerleave', () => { mouse.x = mouse.y = -999; });
+    new IntersectionObserver(([en]) => { run = en.isIntersecting; if (run && !reduce) { cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); } }).observe(cv);
+    frame();
+  })();
+
+  // ripple on the hero cup when the pointer moves over it
+  (function cupRipple(){
+    const g = $('#ripples'); let last = 0;
+    $('#cupwrap').addEventListener('pointermove', e => {
+      if (reduce || performance.now() - last < 220) return; last = performance.now();
+      const svg = $('#cupwrap .ripples'), r = svg.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width * 520, y = (e.clientY - r.top) / r.height * 520;
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 70); c.setAttribute('class', 'ripple');
+      c.style.transformOrigin = `${x}px ${y}px`; c.style.animationIterationCount = '1'; c.style.animationDuration = '1.6s';
+      g.appendChild(c); setTimeout(() => c.remove(), 1700);
+    });
+  })();
+
+  /* ================= cursor ================= */
+  if (fine && !reduce) {
+    const cur = $('.cursor'); let cx = innerWidth / 2, cy = innerHeight / 2, tx = cx, ty = cy;
+    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; });
+    const loop = () => { cx += (tx - cx) * .18; cy += (ty - cy) * .18; cur.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(loop); };
+    loop();
+    document.addEventListener('pointerover', e => cur.classList.toggle('big', !!e.target.closest('a,button,.card,input')));
+  } else { $('.cursor').remove(); }
+
+  /* ================= nav hide/show ================= */
+  let lastY = 0;
+  const onScrollNav = y => {
+    $('.nav').classList.toggle('solid', y > 40);
+    $('.nav').classList.toggle('hide', y > lastY && y > 400 && !$('#drawer').classList.contains('on'));
+    lastY = y;
+  };
+
+  /* ================= smooth scroll + scroll choreography ================= */
+  let lenis = null;
+  const scrollToEl = sel => { const el = $(sel); if (lenis) lenis.scrollTo(el, { offset: 0, duration: 1.4 }); else el.scrollIntoView({ behavior: 'smooth' }); };
+  $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => { const h = a.getAttribute('href'); if (h.length > 1 && $(h)) { e.preventDefault(); scrollToEl(h); } }));
+  let refreshST = () => {};
+
+  const hideLoader = () => { const l = $('#loader'); if (!l) return;
+    if (window.gsap && !reduce) gsap.to(l, { clipPath: 'inset(0 0 100% 0)', duration: .9, ease: 'power3.inOut', onComplete: () => l.remove() }); else l.remove(); };
+
+  if (!hasG || reduce) {
+    root.classList.add('static');
+    addEventListener('scroll', () => onScrollNav(scrollY), { passive: true });
+    hideLoader();
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger); if (window.Flip) gsap.registerPlugin(Flip);
+  refreshST = () => ScrollTrigger.refresh();
+
+  if (window.Lenis) {
+    lenis = new Lenis({ duration: 1.15, smoothWheel: true });
+    lenis.on('scroll', e => { ScrollTrigger.update(); onScrollNav(e.scroll); });
+    gsap.ticker.add(t => lenis.raf(t * 1000)); gsap.ticker.lagSmoothing(0);
+  } else addEventListener('scroll', () => onScrollNav(scrollY), { passive: true });
+
+  // intro: loader lifts, headline letters rise
+  const intro = gsap.timeline({ delay: 1.15 });
+  intro.add(hideLoader)
+       .from('#headline .ch', { yPercent: 110, rotate: 8, opacity: 0, duration: .9, stagger: .025, ease: 'power4.out' }, .3)
+       .from('.hero .hrv', { y: 30, opacity: 0, duration: .8, stagger: .08, ease: 'power3.out' }, .5)
+       .from('#cupwrap .spin', { scale: .7, rotate: -40, duration: 1.4, ease: 'expo.out' }, .4);
+  // stat counters
+  $$('[data-count]').forEach(b => { const o = { v: 0 }; intro.to(o, { v: +b.dataset.count, duration: 1.4, ease: 'power2.out', onUpdate: () => b.textContent = Math.round(o.v) }, .8); });
+  // hero parallax
+  gsap.to('#cupwrap', { yPercent: 18, rotate: 25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  // story: words light up one by one
+  gsap.to('#storytext .w', { opacity: 1, stagger: .1, ease: 'none',
+    scrollTrigger: { trigger: '.story', start: 'top top', end: '+=140%', scrub: .6, pin: true } });
+
+  gsap.fromTo('.sbg img', { scale: 1.18 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.story', start: 'top bottom', end: 'bottom top', scrub: true } });
+
+  // regions: pinned horizontal climb
+  const track = $('#rtrack');
+  const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+  const altEl = $('#alt');
+  const regionTL = gsap.timeline({ scrollTrigger: { trigger: '.regions', start: 'top top', end: () => '+=' + dist(), scrub: .7, pin: true, invalidateOnRefresh: true,
+    onUpdate: self => {
+      const f = self.progress * (REGIONS.length - .2);
+      const i = Math.min(REGIONS.length - 1, Math.floor(f)), k = f - i;
+      const a = i === 0 ? REGIONS[0].hi * k : REGIONS[i - 1].hi + (REGIONS[i].hi - REGIONS[i - 1].hi) * k;
+      altEl.textContent = (Math.round(Math.max(0, a) / 10) * 10).toLocaleString('en-US') + ' m';
+      $('#rprog').style.width = self.progress * 100 + '%';
+    } } });
+  regionTL.to(track, { x: () => -dist(), ease: 'none' }, 0)
+          .to('.ridge', { xPercent: -38, ease: 'none' }, 0);
+  $$('.rcard').forEach(c => gsap.from(c, { y: 80, rotate: 4, opacity: 0, ease: 'power2.out',
+    scrollTrigger: { trigger: c, containerAnimation: regionTL, start: 'left 95%', end: 'left 65%', scrub: true } }));
+  $$('.rimg img').forEach(im => gsap.fromTo(im, { xPercent: -14 }, { xPercent: 0, ease: 'none',
+    scrollTrigger: { trigger: im.parentNode, containerAnimation: regionTL, start: 'left right', end: 'right left', scrub: true } }));
+
+  // teas: cards are dealt from a pile
+  const cards = $$('.card', grid);
+  ScrollTrigger.create({ trigger: grid, start: 'top 80%', once: true, onEnter: () => {
+    const g = grid.getBoundingClientRect(), cx = g.left + g.width / 2, cy = g.top + Math.min(g.height, 500) / 2;
+    cards.forEach((c, i) => { const r = c.getBoundingClientRect();
+      gsap.from(c, { x: cx - (r.left + r.width / 2), y: cy - (r.top + r.height / 2), rotation: (i % 2 ? 1 : -1) * (6 + i * 2), scale: .7, opacity: 0,
+        duration: 1, delay: i * .08, ease: 'power3.out', clearProps: 'transform,opacity' }); });
+  } });
+  gsap.from('.teas .head > *', { y: 40, opacity: 0, stagger: .1, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: '.teas', start: 'top 75%' } });
+
+  // brew: cup rolls in
+  gsap.from('.cupstage', { x: 120, rotate: 30, opacity: 0, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: '.brew', start: 'top 65%' } });
+
+  // process: earlier cards sink back as the next one stacks on top
+  const stepEls = $$('.step');
+  stepEls.forEach((s, i) => { if (i === stepEls.length - 1) return;
+    gsap.to(s, { scale: .92 + i * .012, ease: 'none',
+      scrollTrigger: { trigger: stepEls[i + 1], start: 'top bottom', end: 'top 120px', scrub: true } }); });
+
+  $$('.sph img').forEach(im => gsap.fromTo(im, { scale: 1.2 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: im, start: 'top bottom', end: 'top 25%', scrub: true } }));
+
+  // marquee: speed and direction follow your scroll
+  const loops = [ { el: $('#m1'), dir: -1, x: 0 }, { el: $('#m2'), dir: 1, x: 0 } ];
+  let vel = 0;
+  ScrollTrigger.create({ trigger: '.marquee', start: 'top bottom', end: 'bottom top', onUpdate: s => { vel = s.getVelocity() / 300; } });
+  gsap.ticker.add(() => {
+    const boost = 1 + Math.min(6, Math.abs(vel)); const sign = vel < 0 ? -1 : 1; vel *= .92;
+    loops.forEach(l => { const half = l.el.scrollWidth / 2;
+      l.x += l.dir * sign * .6 * boost; if (l.x <= -half) l.x += half; if (l.x > 0) l.x -= half; l.el.style.transform = `translateX(${l.x}px)`; });
+  });
+
+  gsap.fromTo('.photoband img', { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: '.photoband', start: 'top bottom', end: 'bottom top', scrub: true } });
+  gsap.from('.bandtext > *', { y: 40, opacity: 0, stagger: .12, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: '.photoband', start: 'top 60%' } });
+
+  // subscribe + footer
+  gsap.from('.letter .plan', { y: 80, rotate: -3, opacity: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.letter', start: 'top 70%' } });
+  gsap.from('#giant .gl', { yPercent: 60, opacity: 0, stagger: .05, duration: .9, ease: 'power4.out', clearProps: 'all', scrollTrigger: { trigger: 'footer', start: 'top bottom', toggleActions: 'play none none none' } });
+
+  addEventListener('load', () => ScrollTrigger.refresh());
+})();
+</script>
+
+</body>
+</html>
